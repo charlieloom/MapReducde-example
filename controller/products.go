@@ -1,21 +1,18 @@
 package controller
 
 import (
-	"MapReduce/infra/dao"
+	mapreduce "MapReduce/infra/mapReduce"
 	model2 "MapReduce/model"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
-	"strings"
 	"time"
 
-	mapreduce "github.com/charlieloom/MapReducde"
+	xql_mapreduce "github.com/charlieloom/MapReducde"
 
 	"github.com/gin-gonic/gin"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/spf13/cast"
 )
 
 func ExportProducts(c *gin.Context) {
@@ -27,14 +24,7 @@ func ExportProducts(c *gin.Context) {
 	condition.PageSize, _ = strconv.Atoi(c.Query("pageSize")) //总共要查询的数量
 	condition.Sort = c.Query("sort")
 
-	address := []string{"127.0.0.1:9092"}
-
-	//初始化mapreduce
-	mr, err := mapreduce.InitKMr(address)
-	if err != nil {
-		log.Panic(err)
-		return
-	}
+	m := mapreduce.GetMapReduce()
 
 	log.Println("map开始")
 	start := time.Now()
@@ -53,82 +43,17 @@ func ExportProducts(c *gin.Context) {
 			return
 		}
 		//定义任务
-		task := &mapreduce.Task{
+		task := &xql_mapreduce.Task{
 			Param:    paramJson,
 			Taskname: "query",
 			Group:    "query",
 		}
 
-		mr.Map2(func() (*mapreduce.Task, error) {
+		m.Map2(func() (*xql_mapreduce.Task, error) {
 			return task, nil
 		})
 	}
 	fmt.Printf("map花费时间[%vs]", time.Since(start).Seconds())
-
-	//reduce 查询
-	go mr.Reduce([]string{"query"}, func(task *mapreduce.Task) error {
-		paramquery := &model2.QueryMsg{}
-		err = jsoniter.UnmarshalFromString(task.Param, paramquery)
-		if err != nil {
-			log.Panic(err)
-			return err
-		}
-		//查询
-		productlist, err := dao.GetAllproducts(&paramquery.Condition, paramquery.Offset, paramquery.Limit)
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		value := model2.ExportMsg{
-			Productlist: productlist,
-			File:        paramquery.File,
-			Row:         paramquery.Row,
-		}
-
-		paramJson, _ := jsoniter.MarshalToString(value)
-		//定义任务
-		task = &mapreduce.Task{
-			Param:    paramJson,
-			Taskname: "export",
-			Group:    "export",
-		}
-
-		//将查询的结果发送出去
-		mr.Map2(func() (*mapreduce.Task, error) {
-			return task, nil
-		})
-
-		return nil
-	})
-
-	//导出
-	go mr.Reduce([]string{"export"}, func(task *mapreduce.Task) error {
-		paramexport := &model2.ExportMsg{}
-		err = jsoniter.UnmarshalFromString(task.Param, paramexport)
-		if err != nil {
-			log.Panic(err)
-			return err
-		}
-
-		//处理
-		file, err := os.OpenFile(paramexport.File, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0777)
-		if err != nil {
-			log.Println("open file error :", err, paramexport.File)
-			return err
-		}
-		defer file.Close()
-		for _, product := range paramexport.Productlist {
-			c := []string{cast.ToString(product.ID), product.Name, product.Description, product.Category, cast.ToString(product.Price), cast.ToString(product.StockQuantity), product.CountryOfManufacture, cast.ToString(product.DateAdded), cast.ToString(product.LastUpdated), cast.ToString(product.UnitsSold), cast.ToString(product.NumberOfReviews), cast.ToString(product.AverageRating)}
-			row := strings.Join(c, ",")
-			row += "\n"
-			_, err := file.WriteString(row)
-			if err != nil {
-				fmt.Println("write Error:", err)
-				return err
-			}
-		}
-		return nil
-	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"data": "ok",

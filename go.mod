@@ -1,15 +1,21 @@
 module MapReduce
 
-go 1.21.3
+go 1.19
 
 require (
-	github.com/IBM/sarama v1.42.2
+	github.com/charlieloom/MapReducde v0.0.0-20240216105937-d6297301ee4a
+	github.com/gin-gonic/gin v1.9.1
 	github.com/json-iterator/go v1.1.12
+	github.com/spf13/cast v1.6.0
+	gorm.io/driver/mysql v1.5.4
+	gorm.io/gen v0.3.25
+	gorm.io/gorm v1.25.7
+	gorm.io/plugin/dbresolver v1.5.0
 )
 
 require (
+	github.com/IBM/sarama v1.42.2 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
-	github.com/charlieloom/MapReducde v0.0.0-20240216105937-d6297301ee4a // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.5.0 // indirect
@@ -17,7 +23,6 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.14.0 // indirect
@@ -43,7 +48,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	golang.org/x/arch v0.3.0 // indirect
@@ -56,9 +60,5 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/datatypes v1.2.0 // indirect
-	gorm.io/driver/mysql v1.5.4 // indirect
-	gorm.io/gen v0.3.25 // indirect
-	gorm.io/gorm v1.25.7 // indirect
 	gorm.io/hints v1.1.2 // indirect
-	gorm.io/plugin/dbresolver v1.5.0 // indirect
 )
